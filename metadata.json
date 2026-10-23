@@ -1,0 +1,6 @@
+{
+  "name": "Buku Bendahara Kas RT",
+  "description": "Aplikasi PWA manajemen keuangan kas RT dan rekap iuran bulanan warga yang offline-ready dengan LocalStorage, kalkulasi tunggakan otomatis, dan ekspor data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

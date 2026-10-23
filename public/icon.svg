@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="rtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with safe zone -->
+  <rect width="512" height="512" rx="110" fill="url(#rtGrad)"/>
+  
+  <!-- Book / Ledger outline -->
+  <rect x="110" y="90" width="292" height="332" rx="24" fill="#ffffff" stroke="#e2e8f0" stroke-width="8"/>
+  <path d="M150 90 L150 422" stroke="#cbd5e1" stroke-width="6" stroke-dasharray="10 10"/>
+  
+  <!-- Ledger rows -->
+  <rect x="175" y="140" width="195" height="18" rx="9" fill="#059669"/>
+  <rect x="175" y="180" width="150" height="14" rx="7" fill="#e2e8f0"/>
+  <rect x="175" y="210" width="180" height="14" rx="7" fill="#e2e8f0"/>
+  <rect x="175" y="240" width="130" height="14" rx="7" fill="#e2e8f0"/>
+  
+  <!-- Coins / Rupiah Badge -->
+  <circle cx="340" cy="330" r="68" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="6"/>
+  <text x="340" y="348" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="#78350f" text-anchor="middle">Rp</text>
+  
+  <!-- House / RT Emblem -->
+  <path d="M175 285 L215 250 L255 285 V340 H175 Z" fill="#10b981"/>
+  <rect x="200" y="305" width="30" height="35" rx="3" fill="#ffffff"/>
+</svg>
