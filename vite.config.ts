@@ -11,14 +11,14 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+        includeAssets: ['favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'app-logo.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
         manifest: {
           id: '/',
           name: 'Buku Bendahara Kas RT',
           short_name: 'Kas RT',
           description: 'Aplikasi PWA Buku Bendahara Kas RT & Rekap Iuran Bulanan Warga.',
-          theme_color: '#059669',
-          background_color: '#f8fafc',
+          theme_color: '#0a9af1',
+          background_color: '#0a9af1',
           display: 'standalone',
           start_url: '/',
           scope: '/',

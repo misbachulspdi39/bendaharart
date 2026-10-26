@@ -43,9 +43,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Top bar with branding & quick tools */}
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-white shadow-inner shrink-0">
-              <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-200" />
-            </div>
+            <img 
+              src="/app-logo.png" 
+              alt="Logo Buku Kas RT" 
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md shrink-0 border border-white/20 bg-sky-500/30"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h1 className="font-extrabold text-sm sm:text-lg tracking-tight leading-none text-white truncate">
