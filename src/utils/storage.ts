@@ -4,11 +4,11 @@ import { getCurrentMonthKey, getPreviousMonthKey } from './format';
 const STORAGE_KEY = 'BUKU_KAS_RT_PWA_DATA_V1';
 
 export const DEFAULT_SETTINGS: RTSettings = {
-  rtNumber: '04',
-  rwNumber: '08',
-  subdistrict: 'Kelurahan Sukamaju',
-  city: 'Kota Bekasi',
-  treasurerName: 'Bambang Sutrisno',
+  rtNumber: '19',
+  rwNumber: '44',
+  subdistrict: 'Perum Jatisawit Asri',
+  city: 'Kab. Sleman',
+  treasurerName: 'Bendahara RT 19',
   defaultMonthlyFee: 50000,
 };
 
@@ -179,9 +179,23 @@ export function loadAppState(): AppStateData {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.transactions) && Array.isArray(parsed.residents)) {
+        const loadedSettings: RTSettings = { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) };
+        // Migrate default from previous demo version if still unchanged
+        if (
+          loadedSettings.rtNumber === '04' &&
+          loadedSettings.rwNumber === '08' &&
+          (loadedSettings.subdistrict === 'Kelurahan Sukamaju' || !loadedSettings.subdistrict)
+        ) {
+          loadedSettings.rtNumber = '19';
+          loadedSettings.rwNumber = '44';
+          loadedSettings.subdistrict = 'Perum Jatisawit Asri';
+          loadedSettings.city = 'Kab. Sleman';
+          loadedSettings.treasurerName = 'Bendahara RT 19';
+        }
+
         return {
           version: parsed.version || 1,
-          settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+          settings: loadedSettings,
           transactions: parsed.transactions,
           residents: parsed.residents,
           monthlyRecords: parsed.monthlyRecords || {},

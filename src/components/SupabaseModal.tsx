@@ -73,11 +73,11 @@ export const SupabaseModal: React.FC<SupabaseModalProps> = ({
 -- 1. TABEL PENGATURAN RT (rt_settings)
 CREATE TABLE IF NOT EXISTS public.rt_settings (
     id TEXT PRIMARY KEY DEFAULT 'default',
-    rt_number TEXT NOT NULL DEFAULT '04',
-    rw_number TEXT NOT NULL DEFAULT '08',
-    subdistrict TEXT NOT NULL DEFAULT 'Kelurahan Sukamaju',
-    city TEXT NOT NULL DEFAULT 'Kota Bekasi',
-    treasurer_name TEXT DEFAULT 'Bambang Sutrisno',
+    rt_number TEXT NOT NULL DEFAULT '19',
+    rw_number TEXT NOT NULL DEFAULT '44',
+    subdistrict TEXT NOT NULL DEFAULT 'Perum Jatisawit Asri',
+    city TEXT NOT NULL DEFAULT 'Kab. Sleman',
+    treasurer_name TEXT DEFAULT 'Bendahara RT 19',
     default_monthly_fee BIGINT NOT NULL DEFAULT 50000,
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW())
 );
@@ -139,7 +139,7 @@ CREATE POLICY "Akses Penuh monthly_dues_records" ON public.monthly_dues_records 
 
 -- DATA CONTOH AWAL
 INSERT INTO public.rt_settings (id, rt_number, rw_number, subdistrict, city, treasurer_name, default_monthly_fee)
-VALUES ('default', '04', '08', 'Kelurahan Sukamaju', 'Kota Bekasi', 'Bambang Sutrisno', 50000)
+VALUES ('default', '19', '44', 'Perum Jatisawit Asri', 'Kab. Sleman', 'Bendahara RT 19', 50000)
 ON CONFLICT (id) DO NOTHING;`;
 
   const handleTestConnection = async () => {

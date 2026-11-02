@@ -151,23 +151,44 @@ export async function fetchSupabaseData(): Promise<{ success: boolean; data?: Ap
     if (duesErr) throw duesErr;
 
     // Map database rows to application types
-    const settings: RTSettings = settingsData
-      ? {
-          rtNumber: settingsData.rt_number,
-          rwNumber: settingsData.rw_number,
-          subdistrict: settingsData.subdistrict,
-          city: settingsData.city,
-          treasurerName: settingsData.treasurer_name || '',
-          defaultMonthlyFee: Number(settingsData.default_monthly_fee) || 50000,
-        }
-      : {
-          rtNumber: '04',
-          rwNumber: '08',
-          subdistrict: 'Kelurahan Sukamaju',
-          city: 'Kota Bekasi',
-          treasurerName: 'Bambang Sutrisno',
-          defaultMonthlyFee: 50000,
-        };
+    let settings: RTSettings;
+    if (settingsData) {
+      const isOldDefault = 
+        settingsData.rt_number === '04' && 
+        settingsData.rw_number === '08' && 
+        (settingsData.subdistrict === 'Kelurahan Sukamaju' || !settingsData.subdistrict);
+
+      settings = {
+        rtNumber: isOldDefault ? '19' : settingsData.rt_number,
+        rwNumber: isOldDefault ? '44' : settingsData.rw_number,
+        subdistrict: isOldDefault ? 'Perum Jatisawit Asri' : settingsData.subdistrict,
+        city: isOldDefault ? 'Kab. Sleman' : settingsData.city,
+        treasurerName: isOldDefault ? 'Bendahara RT 19' : (settingsData.treasurer_name || ''),
+        defaultMonthlyFee: Number(settingsData.default_monthly_fee) || 50000,
+      };
+
+      // If it was the old default in Supabase, update the remote row to the new name asynchronously
+      if (isOldDefault) {
+        client.from('rt_settings').upsert({
+          id: 'default',
+          rt_number: '19',
+          rw_number: '44',
+          subdistrict: 'Perum Jatisawit Asri',
+          city: 'Kab. Sleman',
+          treasurer_name: 'Bendahara RT 19',
+          default_monthly_fee: settings.defaultMonthlyFee,
+        }).then();
+      }
+    } else {
+      settings = {
+        rtNumber: '19',
+        rwNumber: '44',
+        subdistrict: 'Perum Jatisawit Asri',
+        city: 'Kab. Sleman',
+        treasurerName: 'Bendahara RT 19',
+        defaultMonthlyFee: 50000,
+      };
+    }
 
     const residents: Resident[] = (residentsData || []).map((r: any) => ({
       id: r.id,

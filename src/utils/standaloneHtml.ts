@@ -33,7 +33,7 @@ export function generateStandaloneHtml(): string {
         </div>
         <div>
           <h1 class="font-extrabold text-lg sm:text-xl tracking-tight leading-tight">Buku Bendahara Kas RT</h1>
-          <p class="text-xs text-emerald-100 font-medium">RT 04 / RW 08 • Offline LocalStorage Ready</p>
+          <p class="text-xs text-emerald-100 font-medium">RT 19 / RW 44 • Perum Jatisawit Asri</p>
         </div>
       </div>
       <div class="flex items-center gap-2">

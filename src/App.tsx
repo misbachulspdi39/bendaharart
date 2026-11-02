@@ -507,7 +507,7 @@ export default function App() {
       {/* Footer Info */}
       <footer className="no-print mt-auto py-5 px-4 border-t border-slate-200 text-center text-xs text-slate-500">
         <p className="font-bold text-slate-700">
-          Buku Bendahara Kas RT {appState.settings.rtNumber} / RW {appState.settings.rwNumber} — {appState.settings.subdistrict}
+          Buku Bendahara Kas RT {appState.settings.rtNumber} / RW {appState.settings.rwNumber} - {appState.settings.subdistrict}
         </p>
         <p className="text-[11px] text-slate-500 mt-1 flex items-center justify-center gap-1.5 flex-wrap">
           <span>{isOnlineConnected ? '🟢 Terhubung Online (Supabase Database)' : '💾 Penyimpanan Aman Aktif'}</span>

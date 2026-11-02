@@ -14,9 +14,9 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'app-logo.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
         manifest: {
           id: '/',
-          name: 'Buku Bendahara Kas RT',
-          short_name: 'Kas RT',
-          description: 'Aplikasi PWA Buku Bendahara Kas RT & Rekap Iuran Bulanan Warga.',
+          name: 'Buku Bendahara Kas RT 19 / RW 44 - Perum Jatisawit Asri',
+          short_name: 'Kas RT 19/44',
+          description: 'Aplikasi PWA Buku Bendahara Kas RT 19 / RW 44 - Perum Jatisawit Asri & Rekap Iuran Bulanan Warga.',
           theme_color: '#0a9af1',
           background_color: '#0a9af1',
           display: 'standalone',
