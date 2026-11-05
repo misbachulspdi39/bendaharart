@@ -8,7 +8,8 @@ import {
   AlertCircle, 
   Users, 
   FileSpreadsheet,
-  CheckCheck
+  CheckCheck,
+  Image as ImageIcon
 } from 'lucide-react';
 import { formatMonthYearIndo, formatRupiah, getPreviousMonthKey, getNextMonthKey, getCurrentMonthKey } from '../../utils/format';
 
@@ -24,6 +25,7 @@ interface IuranHeaderProps {
   onOpenAddResident: () => void;
   onMarkAllPaid?: () => void;
   onExportCsv?: () => void;
+  onOpenExportImage?: () => void;
 }
 
 export const IuranHeader: React.FC<IuranHeaderProps> = ({
@@ -38,6 +40,7 @@ export const IuranHeader: React.FC<IuranHeaderProps> = ({
   onOpenAddResident,
   onMarkAllPaid,
   onExportCsv,
+  onOpenExportImage,
 }) => {
   const currentMonthKey = getCurrentMonthKey();
   const isCurrentMonth = selectedMonthKey === currentMonthKey;
@@ -104,6 +107,17 @@ export const IuranHeader: React.FC<IuranHeaderProps> = ({
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
               <span>Ekspor CSV</span>
+            </button>
+          )}
+
+          {onOpenExportImage && (
+            <button
+              onClick={onOpenExportImage}
+              className="no-print flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300/80 text-xs font-bold transition active:scale-95 shadow-xs"
+              title="Ekspor gambar infografis rekap iuran untuk grup WhatsApp"
+            >
+              <ImageIcon className="w-3.5 h-3.5 text-emerald-700" />
+              <span>📸 Ekspor Gambar (WA)</span>
             </button>
           )}
 

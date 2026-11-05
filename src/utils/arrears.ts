@@ -6,15 +6,25 @@ export interface ResidentDuesCalculation {
   monthKey: string;
   iuranBulanIni: number;
   tunggakanBulanLalu: number;
+  isManualArrears: boolean;
+  autoCalculatedArrears: number;
   totalKewajiban: number;
   status: IuranStatus;
   sisaKewajiban: number;
   record?: MonthlyDuesRecord;
 }
 
+export function getMonthKeyFromTimestamp(timestamp?: number): string {
+  if (!timestamp) return '2020-01';
+  const d = new Date(timestamp);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 /**
- * Calculates dues for a resident in a specific month, recursively resolving arrears.
- * Limits recursion depth to prevent any circular loops.
+ * Calculates dues for a resident in a specific month, recursively resolving arrears
+ * from previous months, while allowing manual intervention (override) by the treasurer.
  */
 export function calculateResidentDues(
   resident: Resident,
@@ -27,16 +37,17 @@ export function calculateResidentDues(
   const currentRecord = monthlyRecords[monthKey]?.[resident.id];
   const status: IuranStatus = currentRecord ? currentRecord.status : 'Terutang';
 
-  let tunggakanBulanLalu = 0;
+  // 1. Calculate automatic arrears by recursing to previous months
+  let autoCalculatedArrears = 0;
 
   if (depth < maxDepth) {
     const prevMonthKey = getPreviousMonthKey(monthKey);
     const prevRecord = monthlyRecords[prevMonthKey]?.[resident.id];
+    const residentCreatedMonth = getMonthKeyFromTimestamp(resident.createdAt);
 
-    // If previous month has a recorded status
     if (prevRecord) {
       if (prevRecord.status === 'Terutang') {
-        // Recursively compute previous month's total kewajiban
+        // Previous month was unpaid -> Roll over the total kewajiban of previous month
         const prevCalc = calculateResidentDues(
           resident,
           prevMonthKey,
@@ -44,18 +55,34 @@ export function calculateResidentDues(
           depth + 1,
           maxDepth
         );
-        tunggakanBulanLalu = prevCalc.totalKewajiban;
+        autoCalculatedArrears = prevCalc.totalKewajiban;
       } else {
-        // Previous month was marked Lunas -> Arrears cleared up to that month
-        tunggakanBulanLalu = 0;
+        // Previous month was marked Lunas -> Arrears completely cleared!
+        autoCalculatedArrears = 0;
       }
     } else {
-      // No explicit record found for previous month.
-      // Check if there are ANY records for earlier months before assuming 0
-      // To keep it predictable, an unrecorded previous month is treated as 0 arrears
-      tunggakanBulanLalu = 0;
+      // No explicit record saved for previous month.
+      // If resident was already registered in or before that month, they owe that month's dues
+      if (prevMonthKey >= residentCreatedMonth) {
+        const prevCalc = calculateResidentDues(
+          resident,
+          prevMonthKey,
+          monthlyRecords,
+          depth + 1,
+          maxDepth
+        );
+        autoCalculatedArrears = prevCalc.totalKewajiban;
+      } else {
+        autoCalculatedArrears = 0;
+      }
     }
   }
+
+  // 2. Check for manual intervention (override) for the current month
+  const isManualArrears = currentRecord?.manualArrears !== undefined && currentRecord.manualArrears !== null;
+  const tunggakanBulanLalu = isManualArrears
+    ? Math.max(0, currentRecord!.manualArrears!)
+    : autoCalculatedArrears;
 
   const totalKewajiban = iuranBulanIni + tunggakanBulanLalu;
   const sisaKewajiban = status === 'Lunas' ? 0 : totalKewajiban;
@@ -65,6 +92,8 @@ export function calculateResidentDues(
     monthKey,
     iuranBulanIni,
     tunggakanBulanLalu,
+    isManualArrears,
+    autoCalculatedArrears,
     totalKewajiban,
     status,
     sisaKewajiban,

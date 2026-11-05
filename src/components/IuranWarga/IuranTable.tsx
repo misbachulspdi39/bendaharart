@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   LayoutGrid,
   Table as TableIcon,
-  Phone
+  Phone,
+  ArrowUpDown
 } from 'lucide-react';
 
 interface IuranTableProps {
@@ -22,6 +23,7 @@ interface IuranTableProps {
   onToggleStatus: (residentId: string, currentStatus: IuranStatus, dues: ResidentDuesCalculation) => void;
   onEditResident: (resident: Resident) => void;
   onDeleteResident: (residentId: string) => void;
+  onOpenManualArrears: (calc: ResidentDuesCalculation) => void;
 }
 
 export const IuranTable: React.FC<IuranTableProps> = ({
@@ -31,13 +33,24 @@ export const IuranTable: React.FC<IuranTableProps> = ({
   onToggleStatus,
   onEditResident,
   onDeleteResident,
+  onOpenManualArrears,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'semua' | 'Lunas' | 'Terutang'>('semua');
-  const [sortBy, setSortBy] = useState<'house' | 'name' | 'total-desc'>('house');
+  const [sortBy, setSortBy] = useState<'house' | 'name-asc' | 'name-desc' | 'total-desc'>('house');
   const [deleteResidentId, setDeleteResidentId] = useState<string | null>(null);
   // View mode toggle: 'cards' is default on mobile, 'table' default on desktop
   const [viewMode, setViewMode] = useState<'auto' | 'cards' | 'table'>('auto');
+
+  const toggleNameSort = () => {
+    if (sortBy === 'name-asc') {
+      setSortBy('name-desc');
+    } else if (sortBy === 'name-desc') {
+      setSortBy('house');
+    } else {
+      setSortBy('name-asc');
+    }
+  };
 
   const filteredCalculations = useMemo(() => {
     return calculations
@@ -52,7 +65,8 @@ export const IuranTable: React.FC<IuranTableProps> = ({
         return true;
       })
       .sort((a, b) => {
-        if (sortBy === 'name') return a.resident.name.localeCompare(b.resident.name);
+        if (sortBy === 'name-asc') return a.resident.name.localeCompare(b.resident.name);
+        if (sortBy === 'name-desc') return b.resident.name.localeCompare(a.resident.name);
         if (sortBy === 'house') return a.resident.houseNumber.localeCompare(b.resident.houseNumber);
         if (sortBy === 'total-desc') return b.totalKewajiban - a.totalKewajiban;
         return 0;
@@ -192,7 +206,8 @@ export const IuranTable: React.FC<IuranTableProps> = ({
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition font-medium text-slate-700"
             >
               <option value="house">Urutkan Blok Rumah</option>
-              <option value="name">Urutkan Nama (A-Z)</option>
+              <option value="name-asc">Urutkan Nama (A-Z)</option>
+              <option value="name-desc">Urutkan Nama (Z-A)</option>
               <option value="total-desc">Kewajiban Tertinggi</option>
             </select>
           </div>
@@ -273,11 +288,27 @@ export const IuranTable: React.FC<IuranTableProps> = ({
                     <p className="font-bold text-slate-700 mt-0.5">{formatRupiah(calc.iuranBulanIni)}</p>
                   </div>
 
-                  <div className={`p-2 rounded-xl ${hasArrears ? 'bg-amber-50 text-amber-900' : 'bg-slate-50'}`}>
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Tunggakan Lalu</p>
+                  <div
+                    onClick={() => onOpenManualArrears(calc)}
+                    className={`p-2 rounded-xl cursor-pointer transition active:scale-95 border ${
+                      hasArrears
+                        ? 'bg-amber-50 text-amber-900 border-amber-200/80 hover:bg-amber-100/60'
+                        : 'bg-slate-50 border-slate-100 hover:bg-slate-100'
+                    }`}
+                    title="Klik untuk menyesuaikan / intervensi tunggakan manual"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <p className="text-[10px] uppercase font-bold text-slate-500">Tunggakan</p>
+                      <Edit3 className="w-2.5 h-2.5 text-slate-400" />
+                    </div>
                     <p className={`font-bold mt-0.5 ${hasArrears ? 'text-amber-700' : 'text-slate-400'}`}>
                       {formatRupiah(calc.tunggakanBulanLalu)}
                     </p>
+                    {calc.isManualArrears && (
+                      <span className="text-[8px] font-extrabold text-amber-800 bg-amber-200/70 px-1 rounded inline-block mt-0.5">
+                        Manual
+                      </span>
+                    )}
                   </div>
 
                   <div className={`p-2 rounded-xl ${isPaid ? 'bg-emerald-50' : 'bg-slate-100'}`}>
@@ -347,7 +378,35 @@ export const IuranTable: React.FC<IuranTableProps> = ({
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-50/80 text-slate-600 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
             <tr>
-              <th className="py-3.5 px-4">1. Nama Warga</th>
+              <th className="py-3.5 px-4">
+                <div className="flex items-center gap-1.5 select-none">
+                  <span>1. Nama Warga</span>
+                  <button
+                    type="button"
+                    onClick={toggleNameSort}
+                    className={`p-1 rounded-lg transition active:scale-95 ${
+                      sortBy === 'name-asc' || sortBy === 'name-desc'
+                        ? 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-700 hover:bg-slate-200/70'
+                    }`}
+                    title={
+                      sortBy === 'name-asc'
+                        ? 'Urutkan Nama: A ke Z (Klik untuk Z ke A)'
+                        : sortBy === 'name-desc'
+                        ? 'Urutkan Nama: Z ke A (Klik untuk kembali ke Blok Rumah)'
+                        : 'Urutkan nama sesuai abjad (A-Z)'
+                    }
+                  >
+                    <ArrowUpDown className="w-3.5 h-3.5" />
+                  </button>
+                  {sortBy === 'name-asc' && (
+                    <span className="text-[10px] text-emerald-700 font-black tracking-tight">(A-Z)</span>
+                  )}
+                  {sortBy === 'name-desc' && (
+                    <span className="text-[10px] text-emerald-700 font-black tracking-tight">(Z-A)</span>
+                  )}
+                </div>
+              </th>
               <th className="py-3.5 px-4">2. Blok Rumah</th>
               <th className="py-3.5 px-4 text-right">3. Iuran Bulan Ini</th>
               <th className="py-3.5 px-4 text-right">4. Tunggakan Bulan Lalu</th>
@@ -405,13 +464,32 @@ export const IuranTable: React.FC<IuranTableProps> = ({
 
                     {/* 4. Tunggakan Bulan Lalu */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      {hasArrears ? (
-                        <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/80 text-xs">
-                          <span>⚠️</span> {formatRupiah(calc.tunggakanBulanLalu)}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs font-medium">Rp 0</span>
-                      )}
+                      <div className="flex items-center justify-end gap-1.5">
+                        {hasArrears ? (
+                          <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/80 text-xs">
+                            <span>⚠️</span> {formatRupiah(calc.tunggakanBulanLalu)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs font-medium">Rp 0</span>
+                        )}
+
+                        {calc.isManualArrears && (
+                          <span
+                            className="text-[9px] px-1.5 py-0.5 rounded font-extrabold bg-amber-100 text-amber-800 border border-amber-300"
+                            title="Tunggakan disesuaikan secara manual oleh bendahara"
+                          >
+                            Manual
+                          </span>
+                        )}
+
+                        <button
+                          onClick={() => onOpenManualArrears(calc)}
+                          className="p-1 rounded-md text-slate-400 hover:text-amber-700 hover:bg-amber-50 transition active:scale-95"
+                          title="Intervensi / Sesuaikan Tunggakan Bulan Lalu"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
 
                     {/* 5. Total Kewajiban */}

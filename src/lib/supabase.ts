@@ -218,12 +218,24 @@ export async function fetchSupabaseData(): Promise<{ success: boolean; data?: Ap
       if (!monthlyRecords[monthKey]) {
         monthlyRecords[monthKey] = {};
       }
+
+      let manualArrears: number | undefined = undefined;
+      let cleanNotes = d.notes || undefined;
+      if (d.notes && typeof d.notes === 'string' && d.notes.includes('[ARREARS:')) {
+        const match = d.notes.match(/\[ARREARS:(\d+)\]/);
+        if (match) {
+          manualArrears = parseInt(match[1], 10);
+          cleanNotes = d.notes.replace(/\[ARREARS:\d+\]/g, '').trim() || undefined;
+        }
+      }
+
       monthlyRecords[monthKey][resId] = {
         residentId: resId,
         monthKey: monthKey,
         status: d.status,
         paidAt: d.paid_at || undefined,
-        notes: d.notes || undefined,
+        notes: cleanNotes,
+        manualArrears,
       };
     });
 
@@ -408,13 +420,21 @@ export async function syncMonthlyDuesOnline(record: MonthlyDuesRecord): Promise<
   if (!client) return;
 
   try {
+    let notesToSave = record.notes || null;
+    if (record.manualArrears !== undefined) {
+      const baseNote = (record.notes || '').replace(/\[ARREARS:\d+\]/g, '').trim();
+      notesToSave = baseNote ? `${baseNote} [ARREARS:${record.manualArrears}]` : `[ARREARS:${record.manualArrears}]`;
+    } else if (notesToSave) {
+      notesToSave = notesToSave.replace(/\[ARREARS:\d+\]/g, '').trim() || null;
+    }
+
     await client.from('monthly_dues_records').upsert({
       id: `${record.monthKey}_${record.residentId}`,
       month_key: record.monthKey,
       resident_id: record.residentId,
       status: record.status,
       paid_at: record.paidAt || null,
-      notes: record.notes || null,
+      notes: notesToSave,
       updated_at: new Date().toISOString(),
     });
   } catch (err) {

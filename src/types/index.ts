@@ -29,6 +29,7 @@ export interface MonthlyDuesRecord {
   status: IuranStatus;
   paidAt?: string;
   notes?: string;
+  manualArrears?: number; // Nilai intervensi manual tunggakan bulan lalu
 }
 
 export interface RTSettings {

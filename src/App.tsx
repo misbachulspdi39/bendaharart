@@ -36,6 +36,8 @@ import { RecordToCashModal } from './components/RecordToCashModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { PrintReportView } from './components/PrintReportView';
 import { SupabaseModal } from './components/SupabaseModal';
+import { ManualArrearsModal } from './components/IuranWarga/ManualArrearsModal';
+import { ExportImageModal } from './components/ExportImageModal';
 import { 
   getSupabaseConfig, 
   testSupabaseConnection, 
@@ -66,6 +68,13 @@ export default function App() {
   const [isOnlineConnected, setIsOnlineConnected] = useState(false);
   const [isResidentModalOpen, setIsResidentModalOpen] = useState(false);
   const [editingResident, setEditingResident] = useState<Resident | null>(null);
+
+  // Manual arrears intervention modal state
+  const [manualArrearsCalc, setManualArrearsCalc] = useState<ResidentDuesCalculation | null>(null);
+
+  // Export Image (WA) modal state
+  const [isExportImageOpen, setIsExportImageOpen] = useState(false);
+  const [exportImageType, setExportImageType] = useState<'kas' | 'iuran'>('kas');
 
   // Cash ledger prompt modal when marking resident Lunas
   const [pendingCashRecord, setPendingCashRecord] = useState<ResidentDuesCalculation | null>(null);
@@ -312,6 +321,55 @@ export default function App() {
     }
   };
 
+  const handleUpdateManualArrears = (
+    residentId: string,
+    monthKey: string,
+    manualArrears: number | undefined,
+    notes?: string
+  ) => {
+    setAppState((prev) => {
+      const monthRecs = { ...(prev.monthlyRecords[monthKey] || {}) };
+      const current = monthRecs[residentId] || {
+        residentId,
+        monthKey,
+        status: 'Terutang',
+      };
+
+      const updated: MonthlyDuesRecord = {
+        ...current,
+        manualArrears,
+        notes: notes !== undefined ? notes : current.notes,
+      };
+
+      monthRecs[residentId] = updated;
+
+      return {
+        ...prev,
+        monthlyRecords: {
+          ...prev.monthlyRecords,
+          [monthKey]: monthRecs,
+        },
+      };
+    });
+
+    if (isOnlineConnected) {
+      const existingStatus = appState.monthlyRecords[monthKey]?.[residentId]?.status || 'Terutang';
+      syncMonthlyDuesOnline({
+        residentId,
+        monthKey,
+        status: existingStatus,
+        manualArrears,
+        notes,
+      });
+    }
+
+    showToast(
+      manualArrears !== undefined
+        ? `Tunggakan ${formatRupiah(manualArrears)} berhasil disesuaikan.`
+        : 'Tunggakan dikembalikan ke hitungan otomatis sistem.'
+    );
+  };
+
   const handleSaveResident = (
     data: Omit<Resident, 'id' | 'createdAt'>,
     existingId?: string
@@ -463,6 +521,10 @@ export default function App() {
             <KasTable
               transactions={appState.transactions}
               onDeleteTransaction={handleDeleteTransaction}
+              onOpenExportImage={() => {
+                setExportImageType('kas');
+                setIsExportImageOpen(true);
+              }}
             />
           </div>
         )}
@@ -486,6 +548,10 @@ export default function App() {
               }}
               onMarkAllPaid={handleMarkAllPaid}
               onExportCsv={handleExportIuranCsv}
+              onOpenExportImage={() => {
+                setExportImageType('iuran');
+                setIsExportImageOpen(true);
+              }}
             />
 
             {/* Tabel Iuran Warga (6 Kolom Sesuai Ketentuan) */}
@@ -499,6 +565,7 @@ export default function App() {
                 setIsResidentModalOpen(true);
               }}
               onDeleteResident={handleDeleteResident}
+              onOpenManualArrears={(calc) => setManualArrearsCalc(calc)}
             />
           </div>
         )}
@@ -570,6 +637,33 @@ export default function App() {
         onClose={() => setPendingCashRecord(null)}
         dues={pendingCashRecord}
         onConfirm={handleConfirmLunas}
+      />
+
+      {/* Manual Arrears Intervention Modal */}
+      <ManualArrearsModal
+        isOpen={!!manualArrearsCalc}
+        onClose={() => setManualArrearsCalc(null)}
+        calc={manualArrearsCalc}
+        onSave={handleUpdateManualArrears}
+      />
+
+      {/* Export Image for WhatsApp Share Modal */}
+      <ExportImageModal
+        isOpen={isExportImageOpen}
+        onClose={() => setIsExportImageOpen(false)}
+        type={exportImageType}
+        settings={appState.settings}
+        transactions={appState.transactions}
+        totalIncome={totalIncome}
+        totalExpense={totalExpense}
+        balance={balance}
+        selectedMonthKey={selectedMonthKey}
+        calculations={calculations}
+        totalTarget={totalTarget}
+        totalCollected={totalCollected}
+        totalArrears={totalArrears}
+        paidCount={paidCount}
+        unpaidCount={unpaidCount}
       />
 
       {/* Non-intrusive offline status banner */}

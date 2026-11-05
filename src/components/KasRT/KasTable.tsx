@@ -11,17 +11,20 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   LayoutGrid,
-  Table as TableIcon
+  Table as TableIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface KasTableProps {
   transactions: Transaction[];
   onDeleteTransaction: (id: string) => void;
+  onOpenExportImage?: () => void;
 }
 
 export const KasTable: React.FC<KasTableProps> = ({
   transactions,
   onDeleteTransaction,
+  onOpenExportImage,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<'semua' | 'pemasukan' | 'pengeluaran'>('semua');
@@ -151,6 +154,17 @@ export const KasTable: React.FC<KasTableProps> = ({
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
               <span>Ekspor CSV</span>
             </button>
+
+            {onOpenExportImage && (
+              <button
+                onClick={onOpenExportImage}
+                className="no-print flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300/80 text-xs font-bold transition active:scale-95 shadow-xs"
+                title="Ekspor gambar rekap keuangan kas RT untuk dibagikan ke WhatsApp"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-emerald-700" />
+                <span>📸 Ekspor Gambar (WA)</span>
+              </button>
+            )}
           </div>
         </div>
 
